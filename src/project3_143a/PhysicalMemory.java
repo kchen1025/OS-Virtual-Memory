@@ -64,11 +64,44 @@ public class PhysicalMemory {
 		
 	}
 	
+	private int getPTAddress(int segmentIndex){
+		return this.PM[segmentIndex];
+	}
+	
+	
+	public void setPT(int pageIndex, int segmentIndex, int pageAddress){
+	
+		int pageTableStart = getPTAddress(segmentIndex);
+
+		if(pageTableStart != -1 && pageTableStart != 0){
+			
+			//set index in page table to page address
+			this.PM[pageTableStart + pageIndex] = pageAddress;
+			
+			if(pageAddress != -1){
+				//initialize the page
+				for(int i = pageAddress; i < pageAddress + frameSize; i++){
+					this.PM[i] = initializedAddress;
+				}
+				
+				//set bit map to reflect this
+				this.BM.setBit1(pageAddress/frameSize);
+			}	
+		}
+		else{
+			System.out.println("Page table does not exist");
+		}
+		
+		
+	}
+	
 	public static void main(String[] args){
 		PhysicalMemory p = new PhysicalMemory();
 		p.init();
 		p.setST(15, 512);
 		p.setST(2, -1);
+		p.setPT(7, 15,4096);
+	
 		p.printMem();
 	}
 	
