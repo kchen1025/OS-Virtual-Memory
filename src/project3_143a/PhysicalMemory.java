@@ -3,6 +3,7 @@ package project3_143a;
 import java.util.Arrays;
 
 public class PhysicalMemory {
+	//constants kept for code readability
 	private static final int frameSize = 512;
 	private static final int memorySize = 1024;
 	private static final int emptyAddress = -1;
@@ -24,7 +25,8 @@ public class PhysicalMemory {
 				
 				if(i%frameSize == 0){
 					System.out.println();
-					System.out.print(i/frameSize+" ");
+					System.out.print(i/frameSize+" |");
+					System.out.print(this.PM[i]+ " ");
 				}
 				else{
 					
@@ -38,28 +40,35 @@ public class PhysicalMemory {
 		//set all values to -1 to indicate nothing is there 
 		Arrays.fill(this.PM, emptyAddress);
 		
+		//initialize all values to 0 in segment table
+		for(int i = 0 ; i < frameSize; i++){
+			this.PM[i] = initializedAddress;
+		}
+		
 		//set bitmap to indicate first frame is for segment table
 		this.BM.setBit1(0);
 		
-	}
-	
+	}	
 	
 	public void setST(int st_index, int address){
 		this.PM[st_index] = address;
 		
-		//init the page table for 1024 cells after the address
-		for(int i = address; i < address+(2 * frameSize); i++){
-			this.PM[i] = initializedAddress;
+		if(address != -1){
+			//init the page table for 1024 cells after the address
+			for(int i = address; i < address+(2 * frameSize); i++){
+				this.PM[i] = initializedAddress;
+			}
+			this.BM.setBit1(address/frameSize);
+			this.BM.setBit1((address/frameSize)+1);
 		}
-		this.BM.setBit1(address/frameSize);
-		this.BM.setBit1((address/frameSize)+1);
+		
 	}
 	
 	public static void main(String[] args){
 		PhysicalMemory p = new PhysicalMemory();
 		p.init();
 		p.setST(15, 512);
-		p.setST(2, 2048);
+		p.setST(2, -1);
 		p.printMem();
 	}
 	
