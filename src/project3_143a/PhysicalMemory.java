@@ -90,18 +90,57 @@ public class PhysicalMemory {
 		}
 		else{
 			System.out.println("Page table does not exist");
+		}	
+	}
+	
+	public String addressTranslation(int rwBit, int virtualAddress){
+		if(rwBit == 0){
+			//read
+			return readAccess(virtualAddress);
 		}
+		if(rwBit == 1){
+			//write
+			return "d";
+		}
+		return "false";
+	}
+	
+	private int getEntryOfPT(int pageTableAddress, int pageIndex){
+		return this.PM[pageTableAddress+pageIndex];
+	}
+	
+	private int getEntryOfST(int segmentIndex){
+		return this.PM[segmentIndex];
+	}
+	
+	private String readAccess(int virtualAddress){
+		VirtualMemory va = new VirtualMemory(virtualAddress);
+	
+		int pageTableAddress = getEntryOfST(va.getS());
+		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
 		
-		
+		if(pageTableAddress == -1 || pageAddress == -1){
+			return "pf";
+		}
+		if(pageTableAddress == 0 || pageAddress == 0){
+			return "error";
+		}
+		else{
+			return Integer.toString(pageAddress+va.getW());
+		}
+	
+				
 	}
 	
 	public static void main(String[] args){
 		PhysicalMemory p = new PhysicalMemory();
 		p.init();
-		p.setST(15, 512);
-		p.setST(2, -1);
-		p.setPT(7, 15,4096);
-	
+		p.setST(2,2048);
+		
+		p.setPT(0, 2, 512);
+		p.setPT(1, 2, -1);
+		System.out.println(p.addressTranslation(0,1048576));
+		
 		p.printMem();
 	}
 	
