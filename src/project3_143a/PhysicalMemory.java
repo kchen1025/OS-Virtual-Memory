@@ -100,10 +100,11 @@ public class PhysicalMemory {
 		}
 		if(rwBit == 1){
 			//write
-			return "d";
+			return writeAccess(virtualAddress);
 		}
-		return "false";
+		return "error in rwBit";
 	}
+	
 	
 	private int getEntryOfPT(int pageTableAddress, int pageIndex){
 		return this.PM[pageTableAddress+pageIndex];
@@ -111,6 +112,65 @@ public class PhysicalMemory {
 	
 	private int getEntryOfST(int segmentIndex){
 		return this.PM[segmentIndex];
+	}
+	
+	private void setEntryOfST(int segmentIndex, int pageTableIndex){
+		this.PM[segmentIndex] = pageTableIndex;
+	}
+	
+	private void setEntryOfPT(int pageTableAddress, int pageTableIndex, int newPageAddress){
+		this.PM[pageTableAddress+pageTableIndex] = newPageAddress;
+	}
+	
+	private void createNewPage(VirtualMemory va){
+		int pageIndex = BM.getOpenBit();
+		BM.setBit1(pageIndex);
+		setEntryOfPT(PM[va.getS()],va.getP(),pageIndex*frameSize);
+		
+		for(int i = pageIndex*frameSize; i < pageIndex*frameSize + frameSize; i++){
+			this.PM[i] = initializedAddress;
+		}
+	}
+	
+	private String writeAccess(int virtualAddress){
+		VirtualMemory va = new VirtualMemory(virtualAddress);
+		
+		int pageTableAddress = getEntryOfST(va.getS());
+		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
+		
+		if(pageTableAddress == -1 || pageAddress == -1){
+			return "pf";
+		}
+		
+		if(pageTableAddress == 0){
+			//allocate new PT
+			int openPair = BM.getOpenPair();
+			BM.setBit1(openPair);
+			BM.setBit1(openPair+1);
+			setEntryOfST(va.getS(),openPair*frameSize);
+			
+			for(int j = openPair*frameSize; j < openPair*frameSize + 2 * frameSize; j++){
+				this.PM[j] = initializedAddress;
+			}
+			
+			//allocate new page
+			createNewPage(va);
+			int ret = getEntryOfPT(PM[va.getS()],va.getP()) + va.getW();
+			return Integer.toString(ret);
+		}
+		
+		else if(pageAddress == 0){
+			createNewPage(va);
+			int ret = getEntryOfPT(PM[va.getS()],va.getP()) + va.getW();
+			return Integer.toString(ret);
+		}
+		
+		else{
+			int ret = getEntryOfPT(PM[va.getS()],va.getP()) + va.getW();
+			return Integer.toString(ret);
+		}
+		
+		
 	}
 	
 	private String readAccess(int virtualAddress){
@@ -127,9 +187,7 @@ public class PhysicalMemory {
 		}
 		else{
 			return Integer.toString(pageAddress+va.getW());
-		}
-	
-				
+		}			
 	}
 	
 	public static void main(String[] args){
@@ -140,6 +198,9 @@ public class PhysicalMemory {
 		p.setPT(0, 2, 512);
 		p.setPT(1, 2, -1);
 		System.out.println(p.addressTranslation(0,1048576));
+		System.out.println(p.addressTranslation(1,1048586));
+		System.out.println(p.addressTranslation(1, 1049088));
+		System.out.println(p.addressTranslation(1, 2098698));
 		
 		p.printMem();
 	}

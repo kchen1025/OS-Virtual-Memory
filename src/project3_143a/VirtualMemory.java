@@ -71,8 +71,9 @@ public class VirtualMemory {
 	
 	
 	public static void main(String[] args){
-		VirtualMemory vm = new VirtualMemory(1048576);
+		VirtualMemory vm = new VirtualMemory(2098698);
 		System.out.println(vm.getS());
 		System.out.println(vm.getP());
+		System.out.println(vm.getW());
 	}
 }

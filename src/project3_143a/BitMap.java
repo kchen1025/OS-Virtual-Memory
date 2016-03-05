@@ -74,6 +74,21 @@ public class BitMap {
 			return 1;
 		}
 		
+		
+		
+		public int getOpenPair(){
+			for(int i = 0; i < 1023; i++){
+				if(getIndex(i) == 0){
+					if(getIndex(i+1) == 0){
+						return i;
+					}
+				}
+			}
+			return -1;
+		}
+		
+		
+		
 		public int getIndex(int index){
 			int test = index;
 			for(int i = 0; i<this.BM.length; i++)
@@ -98,6 +113,7 @@ public class BitMap {
 			BitMap b = new BitMap();
 			b.setBit1(0);
 			b.setBit1(2);
+			b.setBit1(4);
 			b.setBit1(1023);
 			b.setBit0(1023);
 			b.setBit1(665);
@@ -107,7 +123,7 @@ public class BitMap {
 			}
 			
 			System.out.println("lol");
-			
-			System.out.println(b.getIndex(665));
+			System.out.println(b.getOpenPair());
+			//System.out.println(b.getIndex(2));
 		}
 }
