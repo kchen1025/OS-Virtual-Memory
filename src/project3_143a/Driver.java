@@ -18,6 +18,7 @@ public class Driver {
 		String inputFile1 = "file1.txt";
 		String inputFile2 = "file2.txt";
 		String outputFile = "498592231.txt";
+		String outputFile2 = "498592232.txt";
 		
 		try {
 			//creating ouptut file 
