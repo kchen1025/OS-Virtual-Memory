@@ -11,10 +11,12 @@ public class PhysicalMemory {
 	
 	private int[] PM;
 	private BitMap BM;
+	private TLB tlb; 
 	
 	public PhysicalMemory(){
 		PM = new int[memorySize*frameSize];
-		BM = new BitMap();		
+		BM = new BitMap();
+		tlb = new TLB();
 	}
 	
 	
@@ -93,12 +95,21 @@ public class PhysicalMemory {
 		}	
 	}
 	
-	public String addressTranslation(int rwBit, int virtualAddress){
-		if(rwBit == 0){
+	public String addressTranslation(int rwBit, int virtualAddress, boolean tlb_flag){
+		if(rwBit == 0 && tlb_flag == true){
+			//read
+			return readAccess_TLB(virtualAddress);
+		}
+		if(rwBit == 1 && tlb_flag == true){
+			//write
+			return writeAccess_TLB(virtualAddress);
+		}
+		
+		if(rwBit == 0 && tlb_flag == false){
 			//read
 			return readAccess(virtualAddress);
 		}
-		if(rwBit == 1){
+		if(rwBit == 1 && tlb_flag == false){
 			//write
 			return writeAccess(virtualAddress);
 		}
@@ -183,12 +194,67 @@ public class PhysicalMemory {
 			return "pf";
 		}
 		if(pageTableAddress == 0 || pageAddress == 0){
-			return "error";
+			return "err";
 		}
 		else{
 			return Integer.toString(pageAddress+va.getW());
 		}			
 	}
+	
+	
+	//returns the PA of the page
+	private String readAccess_TLB(int virtualAddress){
+		//check tlb for f hit or miss
+		VirtualMemory va = new VirtualMemory(virtualAddress);
+		
+		//tlb hit
+		if(tlb.hitOrMiss(va)){
+			int hitIndex = tlb.searchTLB(va);
+			tlb.updateLRU_hit(hitIndex);
+			return "h "+Integer.toString(va.getW()+tlb.getFramefromIndex(hitIndex));
+		}
+		//tlb miss
+		else{
+			String s = readAccess(virtualAddress);
+			if(s == "pf" || s == "err"){
+				return "m "+s;
+			}
+			//need to update the tlb with the new values found
+			//from read access
+			int missIndex = tlb.getLowestLRU();
+			tlb.setTLB_cell(missIndex, va, this.PM);
+			
+			return "m "+s;
+		}
+	}
+	
+	private String writeAccess_TLB(int virtualAddress){
+		//check tlb for f hit or miss
+		VirtualMemory va = new VirtualMemory(virtualAddress);
+		
+		//tlb hit
+		if(tlb.hitOrMiss(va)){
+			int hitIndex = tlb.searchTLB(va);
+			tlb.updateLRU_hit(hitIndex);
+			return "h "+Integer.toString(va.getW()+tlb.getFramefromIndex(hitIndex));
+		}
+		//tlb miss
+		else{
+			String s = writeAccess(virtualAddress);
+			if(s == "pf"){
+				return "m "+s;
+			}
+			//need to update the tlb with the new values found
+			//from read access
+			int missIndex = tlb.getLowestLRU();
+			tlb.setTLB_cell(missIndex, va, this.PM);
+			
+			return "m "+s;
+		}
+	}
+	
+
+	
 	
 	public static void main(String[] args){
 		PhysicalMemory p = new PhysicalMemory();
@@ -197,10 +263,10 @@ public class PhysicalMemory {
 		
 		p.setPT(0, 2, 512);
 		p.setPT(1, 2, -1);
-		System.out.println(p.addressTranslation(0,1048576));
-		System.out.println(p.addressTranslation(1,1048586));
-		System.out.println(p.addressTranslation(1, 1049088));
-		System.out.println(p.addressTranslation(1, 2098698));
+//		System.out.println(p.addressTranslation(0,1048576));
+//		System.out.println(p.addressTranslation(1,1048586));
+//		System.out.println(p.addressTranslation(1, 1049088));
+//		System.out.println(p.addressTranslation(1, 2098698));
 		
 		p.printMem();
 	}

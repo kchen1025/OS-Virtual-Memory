@@ -15,21 +15,16 @@ public class Driver {
 		PhysicalMemory pm = new PhysicalMemory();
 		pm.init();
 		
+		//turns on the tlb for read write (true means tlb on)
+		boolean TLB_FLAG = false;
+		
+		
 		String inputFile1 = "file1.txt";
 		String inputFile2 = "file2.txt";
 		String outputFile = "498592231.txt";
 		String outputFile2 = "498592232.txt";
 		
 		try {
-			//creating ouptut file 
-			File file2 = new File(outputFile);
-	        if (!file2.exists()) {
-				file2.createNewFile();
-			}
-			
-			FileWriter fw = new FileWriter(file2.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			
 			br = new BufferedReader(new FileReader(inputFile1));
 
 			String[] firstLine;
@@ -51,14 +46,43 @@ public class Driver {
 			
 			//read the second input file for the virtual addresses
 			br = new BufferedReader(new FileReader(inputFile2));
-			firstLine = br.readLine().split(" ");
 			
-			for(int i = 0; i < firstLine.length; i+=2){
-				bw.write(pm.addressTranslation(Integer.parseInt(firstLine[i]),Integer.parseInt(firstLine[i+1]))+" ");
+			//using tlb, output to first file 
+			firstLine = br.readLine().split(" ");
+			if(TLB_FLAG == false){
+				File file2 = new File(outputFile);
+		        if (!file2.exists()) {
+					file2.createNewFile();
+				}
+				
+		        FileWriter fw = new FileWriter(file2.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+				
+				for(int i = 0; i < firstLine.length; i+=2){
+					bw.write(pm.addressTranslation(Integer.parseInt(firstLine[i]),Integer.parseInt(firstLine[i+1]),TLB_FLAG)+" ");
+				}
+				
+				bw.close();
 			}
 			
-			
-			bw.close();
+			//using tlb, output to second file
+			if(TLB_FLAG == true){
+				File file3 = new File(outputFile2);
+		        if (!file3.exists()) {
+					file3.createNewFile();
+				}
+		        
+		        FileWriter fw2 = new FileWriter(file3.getAbsoluteFile());
+				BufferedWriter bw2 = new BufferedWriter(fw2);
+				
+				
+				for(int i = 0; i < firstLine.length; i+=2){
+					bw2.write(pm.addressTranslation(Integer.parseInt(firstLine[i]),Integer.parseInt(firstLine[i+1]),TLB_FLAG)+" ");
+				}
+				
+				bw2.close();
+			}
+		
 			
 		} catch (IOException e) {
 			e.printStackTrace();

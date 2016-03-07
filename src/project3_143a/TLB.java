@@ -15,6 +15,10 @@ public class TLB {
 		}
 	}
 	
+	public int getFramefromIndex(int index){
+		return this.table[index].getFrame();
+	}
+	
 	
 	public boolean hitOrMiss(VirtualMemory va){
 		//returns hit or miss (true or false)
@@ -57,6 +61,11 @@ public class TLB {
 		return -1;
 	}
 	
+	public void setTLB_cell(int index, VirtualMemory va, int[] pm){
+		updateLRU_miss();
+		this.table[index].setSP(va.getS()+va.getP());
+		this.table[index].setFrame(pm[pm[va.getS()]+va.getP()]);
+	}
 	
 	public void updateLRU_hit(int hitIndex){
 		int matchingLRU = this.table[hitIndex].getLRU();
@@ -70,6 +79,7 @@ public class TLB {
 		
 		this.table[hitIndex].setLRU(3);
 	}
+	
 	
 	public void updateLRU_miss(){
 		int lowestLRU = getLowestLRU();
