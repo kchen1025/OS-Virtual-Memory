@@ -53,6 +53,7 @@ public class PhysicalMemory {
 	}	
 	
 	public void setST(int st_index, int address){
+		
 		this.PM[st_index] = address;
 		
 		if(address != -1){
@@ -147,11 +148,19 @@ public class PhysicalMemory {
 		VirtualMemory va = new VirtualMemory(virtualAddress);
 		
 		int pageTableAddress = getEntryOfST(va.getS());
-		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
 		
-		if(pageTableAddress == -1 || pageAddress == -1){
+		
+		if(pageTableAddress == -1){
 			return "pf";
 		}
+		
+		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
+		
+		if(pageAddress == -1){
+			return "pf";
+		}
+		
+		
 		
 		if(pageTableAddress == 0){
 			//allocate new PT
@@ -188,14 +197,25 @@ public class PhysicalMemory {
 		VirtualMemory va = new VirtualMemory(virtualAddress);
 	
 		int pageTableAddress = getEntryOfST(va.getS());
-		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
+
 		
-		if(pageTableAddress == -1 || pageAddress == -1){
+		
+		if(pageTableAddress == -1){
 			return "pf";
 		}
-		if(pageTableAddress == 0 || pageAddress == 0){
+		if(pageTableAddress == 0){
 			return "err";
 		}
+		
+		int pageAddress = getEntryOfPT(pageTableAddress, va.getP());
+		
+		if(pageAddress == -1){
+			return "pf";
+		}
+		if(pageAddress == 0){
+			return "err";
+		}
+		
 		else{
 			return Integer.toString(pageAddress+va.getW());
 		}			
@@ -257,17 +277,26 @@ public class PhysicalMemory {
 	
 	
 	public static void main(String[] args){
+		boolean TLB_FLAG = false;
+		
 		PhysicalMemory p = new PhysicalMemory();
 		p.init();
-		p.setST(2,2048);
+		p.setST(0,4608);
+		p.setST(1, -1);
+		p.setST(2,9216);
+		p.setST(5, 1536);
 		
-		p.setPT(0, 2, 512);
-		p.setPT(1, 2, -1);
-//		System.out.println(p.addressTranslation(0,1048576));
-//		System.out.println(p.addressTranslation(1,1048586));
-//		System.out.println(p.addressTranslation(1, 1049088));
-//		System.out.println(p.addressTranslation(1, 2098698));
-		
+		p.setPT(0, 0, 4096);
+		p.setPT(0,5,7168);
+		p.setPT(1,5,8704);
+		p.setPT(2,5,-1);
+		p.setPT(4,5,32768);
+		p.setPT(5,5,65536);
+		System.out.println(p.addressTranslation(0, 524288,TLB_FLAG));
+//		System.out.println(p.addressTranslation(1,1048586,TLB_FLAG));
+//		System.out.println(p.addressTranslation(1, 1049088,TLB_FLAG));
+//		System.out.println(p.addressTranslation(1, 2098698,TLB_FLAG));
+//		
 		p.printMem();
 	}
 	

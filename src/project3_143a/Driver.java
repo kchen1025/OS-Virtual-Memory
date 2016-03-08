@@ -16,7 +16,7 @@ public class Driver {
 		pm.init();
 		
 		//turns on the tlb for read write (true means tlb on)
-		boolean TLB_FLAG = false;
+		boolean TLB_FLAG = true;
 		
 		
 		String inputFile1 = "file1.txt";
@@ -32,6 +32,7 @@ public class Driver {
 
 			firstLine = br.readLine().split(" ");
 			secondLine = br.readLine().split(" ");
+	
 			
 			//initiatlize the segment tables for line 1 
 			for(int i = 0; i < firstLine.length; i+=2){
@@ -42,7 +43,7 @@ public class Driver {
 			for(int i = 0; i < secondLine.length; i+=3){
 				pm.setPT(Integer.parseInt(secondLine[i]), Integer.parseInt(secondLine[i+1]), Integer.parseInt(secondLine[i+2]));
 			}
-			
+				
 			
 			//read the second input file for the virtual addresses
 			br = new BufferedReader(new FileReader(inputFile2));
@@ -59,11 +60,14 @@ public class Driver {
 				BufferedWriter bw = new BufferedWriter(fw);
 				
 				for(int i = 0; i < firstLine.length; i+=2){
+					System.out.println(firstLine[i+1]);
 					bw.write(pm.addressTranslation(Integer.parseInt(firstLine[i]),Integer.parseInt(firstLine[i+1]),TLB_FLAG)+" ");
 				}
 				
 				bw.close();
 			}
+			
+
 			
 			//using tlb, output to second file
 			if(TLB_FLAG == true){
@@ -75,8 +79,9 @@ public class Driver {
 		        FileWriter fw2 = new FileWriter(file3.getAbsoluteFile());
 				BufferedWriter bw2 = new BufferedWriter(fw2);
 				
-				
+			
 				for(int i = 0; i < firstLine.length; i+=2){
+					
 					bw2.write(pm.addressTranslation(Integer.parseInt(firstLine[i]),Integer.parseInt(firstLine[i+1]),TLB_FLAG)+" ");
 				}
 				
